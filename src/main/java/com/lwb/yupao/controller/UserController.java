@@ -2,16 +2,19 @@ package com.lwb.yupao.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.lwb.yupao.common.BaseResult;
+import com.lwb.yupao.common.BusinessesException;
+import com.lwb.yupao.common.ErrorCode;
 import com.lwb.yupao.model.User;
 import com.lwb.yupao.model.req.UserLoginRequest;
 import com.lwb.yupao.model.req.UserRegisterRequest;
 import com.lwb.yupao.service.UserService;
+import com.lwb.yupao.utils.ResultUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,22 +36,22 @@ public class UserController {
 
     /**
      * 用户注册
-     *
      * @param userRequest 用户注册请求体
      * @return Long
      */
     @PostMapping("/register")
-    Long saveUser(@RequestBody UserRegisterRequest userRequest) {
+    BaseResult<Long> saveUser(@RequestBody UserRegisterRequest userRequest) {
         if (userRequest == null) {
-            return null;
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
         String userAccount = userRequest.getUserAccount();
         String userPassword = userRequest.getUserPassword();
         String checkPassword = userRequest.getCheckPassword();
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
-            return null;
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
-        return userService.userRegister(userRequest.getUserAccount(), userRequest.getUserPassword(), userRequest.getCheckPassword());
+        long register = userService.userRegister(userRequest.getUserAccount(), userRequest.getUserPassword(), userRequest.getCheckPassword());
+        return ResultUtil.success(register);
     }
 
     /**
@@ -59,41 +62,62 @@ public class UserController {
      * @return User
      */
     @PostMapping("/login")
-    User loginUser(@RequestBody UserLoginRequest userRequest, HttpServletRequest request) {
+    BaseResult<User> loginUser(@RequestBody UserLoginRequest userRequest, HttpServletRequest request) {
         if (userRequest == null) {
-            return null;
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
         String userAccount = userRequest.getUserAccount();
         String userPassword = userRequest.getUserPassword();
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            return null;
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
-        return userService.userLogin(userAccount, userPassword, request);
+        User user = userService.userLogin(userAccount, userPassword, request);
+        return ResultUtil.success(user);
     }
-
+    @PostMapping("/logout")
+    BaseResult<Integer> logoutUser(@RequestBody HttpServletRequest request) {
+        if (request == null) {
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
+        }
+        int result = userService.userLogout(request);
+        return ResultUtil.success(result);
+    }
     @GetMapping("/search")
-    List<User> getUserList(String username, HttpServletRequest request) {
+    BaseResult<List<User>> getUserList(String username, HttpServletRequest request) {
         if (isAdmin(request)) {
-            return new ArrayList<>();
+            throw new BusinessesException(ErrorCode.FORBIDDEN);
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(username)) {
             queryWrapper.like("username", username);
         }
-        return userService.list(queryWrapper).stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        List<User> collect = userService.list(queryWrapper).stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        return ResultUtil.success(collect);
     }
 
     @PostMapping("/delete")
-    boolean deleteUser(long id, HttpServletRequest request) {
+    BaseResult<Boolean> deleteUser(long id, HttpServletRequest request) {
         if (isAdmin(request)) {
-            return false;
+            throw new BusinessesException(ErrorCode.FORBIDDEN);
         }
         if (id < 0) {
-            return false;
+            throw new BusinessesException(ErrorCode.USER_NOT_EXIST);
         }
-        return userService.removeById(id);
+        boolean res = userService.removeById(id);
+        return ResultUtil.success(res);
     }
-
+    @GetMapping("/current")
+    BaseResult<User> getCurrentUser(HttpServletRequest request) {
+        User currentUser =  (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+        if (currentUser == null) {
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
+        }
+        long id = currentUser.getId();
+        // TODO 检验用户是否合法
+        User user = userService.getById(id);
+        User safetyUser = userService.getSafetyUser(user);
+        return ResultUtil.success(safetyUser);
+    }
     /**
      * 判断是否为管理员
      * @param request HttpServletRequest

@@ -2,6 +2,8 @@ package com.lwb.yupao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lwb.yupao.common.BusinessesException;
+import com.lwb.yupao.common.ErrorCode;
 import com.lwb.yupao.model.User;
 import com.lwb.yupao.service.UserService;
 import com.lwb.yupao.mapper.UserMapper;
@@ -37,31 +39,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public long userRegister(String account, String password,String checkPassword) {
         //1.校验
         if (StringUtils.isAllBlank(account,password,checkPassword)){
-            //TODO 修改为自定义异常
-            return -1;
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
         if(account.length() < 4 || account.length() > 20){
-           return -1;
+            throw new BusinessesException(ErrorCode.PARAMS_ERROR);
         }
         if (password.length() < 6 || password.length() > 20){
-            return -1;
+            throw new BusinessesException(ErrorCode.PARAMS_ERROR);
         }
         //校验特殊字符
         String pattern = "[`~!@#$%^&*()+=|{}:;\\\\.<>/?！￥…（）—【】‘；：”“’。，、？' ]";
         Matcher matcher = Pattern.compile(pattern).matcher(account);
         if (matcher.find()){
-            return -1;
+            throw new BusinessesException(ErrorCode.PARAMS_ERROR,"参数包含特殊字符");
         }
         //校验两次密码是否一致
         if(!password.equals(checkPassword)){
-            return -1;
+            throw new BusinessesException(ErrorCode.PARAMS_ERROR,"两次输入密码不一致");
         }
         //校验账号是否已存在
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount",account);
         long count = userMapper.selectCount(queryWrapper);
         if (count > 0){
-            return -1;
+            throw new BusinessesException(ErrorCode.SYSTEM_ERROR,"账号已存在");
         }
         //2.密码加密(MD5加盐)
         String saltPassword = DigestUtils.md5DigestAsHex(( SALT + account + password).getBytes());
@@ -72,7 +73,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //4.返回结果
         boolean saveResult = this.save(user);
         if (!saveResult){
-            return -1;
+            throw new BusinessesException(ErrorCode.SYSTEM_ERROR);
         }
         return user.getId();
     }
@@ -87,20 +88,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public User userLogin(String account, String password, HttpServletRequest request) {
         //1.校验
         if (StringUtils.isAllBlank(account,password,password)){
-            //TODO 修改为自定义异常
-            return null;
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
         if(account.length() < 4 || account.length() > 20){
-            return null;
+            throw new BusinessesException(ErrorCode.PARAMS_ERROR);
         }
         if (password.length() < 6 || password.length() > 20){
-            return null;
+            throw new BusinessesException(ErrorCode.PARAMS_ERROR);
         }
         //校验特殊字符
         String pattern = "[`~!@#$%^&*()+=|{}:;\\\\.<>/?！（）—【】‘；：”“’。，、？' ]";
         Matcher matcher = Pattern.compile(pattern).matcher(account);
         if (matcher.find()){
-            return null;
+            throw new BusinessesException(ErrorCode.PARAMS_ERROR,"参数包含特殊字符");
         }
         //2.加密
         String saltPassword = DigestUtils.md5DigestAsHex((SALT + account + password).getBytes());
@@ -111,13 +111,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = userMapper.selectOne(queryWrapper);
         if (user == null){
             log.info("login failed, account or password error");
-            return null;
+            throw new BusinessesException(ErrorCode.USER_NOT_EXIST,"账号或密码错误");
         }
         //4.用户脱敏
         User safetyUser = getSafetyUser(user);
         //5.记录用户登录态
         request.getSession().setAttribute(USER_LOGIN_STATE,safetyUser);
         return safetyUser;
+    }
+    /**
+     * 用户注销
+     *
+     * @param request 请求
+     * @return int
+     */
+    @Override
+    public int userLogout(HttpServletRequest request) {
+        //移除登录态
+        request.getSession().removeAttribute(USER_LOGIN_STATE);
+        return 0;
     }
 
     /**
@@ -127,6 +139,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public User getSafetyUser(User originUser){
+        if(originUser == null){
+            return null;
+        }
         User safetyUser = new User();
         safetyUser.setId(originUser.getId());
         safetyUser.setUsername(originUser.getUsername());
