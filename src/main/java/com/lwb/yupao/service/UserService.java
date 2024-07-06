@@ -4,6 +4,8 @@ import com.lwb.yupao.model.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.List;
+
 /**
 * @author 路文斌
 * &#064;description  针对表【user(用户表)】的数据库操作Service
@@ -33,6 +35,13 @@ public interface UserService extends IService<User> {
      * @param request 请求
      */
     int userLogout(HttpServletRequest request);
+
+    /**
+     * 根据标签搜索用户
+     * @param tagList 标签列表
+     * @return List<User>
+     */
+    List<User> searchUserByTags(List<String> tagList);
 
     /**
      * 用户脱敏

@@ -2,6 +2,8 @@ package com.lwb.yupao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.lwb.yupao.common.BusinessesException;
 import com.lwb.yupao.common.ErrorCode;
 import com.lwb.yupao.model.User;
@@ -12,9 +14,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
+
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.lwb.yupao.enums.UserEnum.SALT;
 import static com.lwb.yupao.enums.UserEnum.USER_LOGIN_STATE;
@@ -133,6 +140,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     /**
+     * 根据标签搜索用户
+     * @param tagList 标签列表
+     * @return List<User>
+     */
+    @Override
+    public List<User> searchUserByTags(List<String> tagList) {
+        if (CollectionUtils.isEmpty(tagList)) {
+            throw new BusinessesException(ErrorCode.PARAMS_ERROR);
+        }
+//        //模糊查询
+//        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+//        for(String tag : tagList){
+//         queryWrapper = queryWrapper.like("tags",tag);
+//        }
+//        List<User> list = userMapper.selectList(queryWrapper);
+//        return list.stream().map(this::getSafetyUser).collect(Collectors.toList());
+
+        QueryWrapper<User> queryWrapper1 = new QueryWrapper<>();
+        List<User> userList = userMapper.selectList(queryWrapper1);
+        Gson gson = new Gson();
+       return userList.stream().filter(user -> {
+                String tagStr = user.getTags();
+                Set<String> tempList = gson.fromJson(tagStr, new TypeToken<Set<String>>(){}.getType());
+                for (String tag : tagList) {
+                    if (!tempList.contains(tag)) {
+                        return false;
+                    }
+                }
+                return true;
+        }).map(this::getSafetyUser).collect(Collectors.toList());
+}
+
+    /**
      * 用户脱敏
      * @param originUser 初始用户
      * @return User
@@ -152,6 +192,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         safetyUser.setEmail(originUser.getEmail());
         safetyUser.setStatus(originUser.getStatus());
         safetyUser.setCreateTime(originUser.getCreateTime());
+        safetyUser.setTags(originUser.getTags());
         return safetyUser;
     }
 }

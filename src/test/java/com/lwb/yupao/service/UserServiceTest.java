@@ -1,11 +1,17 @@
 package com.lwb.yupao.service;
 
+import com.lwb.yupao.common.BusinessesException;
+import com.lwb.yupao.common.ErrorCode;
 import com.lwb.yupao.mapper.UserMapper;
 import com.lwb.yupao.model.User;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest()
@@ -61,5 +67,11 @@ public class UserServiceTest {
         res = userService.userRegister(userAccount, userPassword, checkPassword);
         //注册成功示例
         Assertions.assertTrue(res>0);
+    }
+    @Test
+    void searchUserByTags() {
+        List<String> tags = new ArrayList<>(List.of("java"));
+        List<User> userList = userService.searchUserByTags(tags);
+        Assertions.assertNotNull(userList);
     }
 }
