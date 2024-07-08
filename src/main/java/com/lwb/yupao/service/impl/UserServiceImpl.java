@@ -17,14 +17,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 
+import java.nio.file.OpenOption;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.lwb.yupao.enums.UserEnum.SALT;
-import static com.lwb.yupao.enums.UserEnum.USER_LOGIN_STATE;
+import static com.lwb.yupao.enums.UserEnum.*;
 
 /**
 * @author 路文斌
@@ -149,27 +151,40 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (CollectionUtils.isEmpty(tagList)) {
             throw new BusinessesException(ErrorCode.PARAMS_ERROR);
         }
-//        //模糊查询
-//        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-//        for(String tag : tagList){
-//         queryWrapper = queryWrapper.like("tags",tag);
-//        }
-//        List<User> list = userMapper.selectList(queryWrapper);
-//        return list.stream().map(this::getSafetyUser).collect(Collectors.toList());
-
-        QueryWrapper<User> queryWrapper1 = new QueryWrapper<>();
-        List<User> userList = userMapper.selectList(queryWrapper1);
-        Gson gson = new Gson();
-       return userList.stream().filter(user -> {
+        if(SEARCH_TAG_WAY){
+            //数据库实现
+            long startTime1 = System.currentTimeMillis();
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            for(String tag : tagList){
+                queryWrapper = queryWrapper.like("tags",tag);
+            }
+            List<User> list = userMapper.selectList(queryWrapper);
+            return list.stream().map(this::getSafetyUser).collect(Collectors.toList());
+//            log.info("mysql time: {}",System.currentTimeMillis() - startTime1);
+        }else{
+            //内存实现
+            long startTime2 = System.currentTimeMillis();
+            QueryWrapper<User> queryWrapper1 = new QueryWrapper<>();
+            List<User> userList = userMapper.selectList(queryWrapper1);
+            Gson gson = new Gson();
+            //可改为并发流parallelStream,但这个并发流使用的是公共线程池，有坑
+            return userList.parallelStream().filter(user -> {
                 String tagStr = user.getTags();
+                if (StringUtils.isBlank(tagStr)){
+                    return false;
+                }
                 Set<String> tempList = gson.fromJson(tagStr, new TypeToken<Set<String>>(){}.getType());
+                //使用Optional.ofNullable判空，如果为空就新建一个对象
+                tempList = Optional.ofNullable(tempList).orElse(new HashSet<>());
                 for (String tag : tagList) {
                     if (!tempList.contains(tag)) {
                         return false;
                     }
                 }
                 return true;
-        }).map(this::getSafetyUser).collect(Collectors.toList());
+            }).map(this::getSafetyUser).collect(Collectors.toList());
+//            log.info("memory time: {}",System.currentTimeMillis() - startTime2);
+        }
 }
 
     /**
@@ -193,6 +208,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         safetyUser.setStatus(originUser.getStatus());
         safetyUser.setCreateTime(originUser.getCreateTime());
         safetyUser.setTags(originUser.getTags());
+        safetyUser.setCode(originUser.getCode());
+        safetyUser.setProfile(originUser.getProfile());
         return safetyUser;
     }
 }

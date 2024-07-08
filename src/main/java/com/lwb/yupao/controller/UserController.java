@@ -13,6 +13,7 @@ import com.lwb.yupao.utils.ResultUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +30,7 @@ import static com.lwb.yupao.enums.UserEnum.USER_LOGIN_STATE;
  */
 @RestController
 @RequestMapping("user")
+@CrossOrigin(origins= "http://localhost:5173")
 public class UserController {
 
     @Resource
@@ -74,6 +76,12 @@ public class UserController {
         User user = userService.userLogin(userAccount, userPassword, request);
         return ResultUtil.success(user);
     }
+
+    /**
+     * * 用户登出
+     * @param request HttpServletRequest
+     * @return Integer
+     */
     @PostMapping("/logout")
     BaseResult<Integer> logoutUser(@RequestBody HttpServletRequest request) {
         if (request == null) {
@@ -117,6 +125,20 @@ public class UserController {
         User user = userService.getById(id);
         User safetyUser = userService.getSafetyUser(user);
         return ResultUtil.success(safetyUser);
+    }
+
+    /**
+     * 根据标签搜索用户
+     * @param tagList 标签列表
+     * @return List<User>
+     */
+    @GetMapping("/searchByTags")
+    BaseResult<List<User>> searchUserByTags(@RequestParam(required = false) List<String> tagList){
+        if (CollectionUtils.isEmpty(tagList)){
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
+        }
+        List<User> userList = userService.searchUserByTags(tagList);
+        return ResultUtil.success(userList);
     }
     /**
      * 判断是否为管理员

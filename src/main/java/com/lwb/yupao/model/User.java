@@ -85,6 +85,14 @@ public class User implements Serializable {
      * 标签列表
      */
     private String tags;
+    /**
+     * 编号
+     */
+    private String code;
+    /**
+     * 个人简介
+     */
+    private String profile;
 
     @Serial
     @TableField(exist = false)
