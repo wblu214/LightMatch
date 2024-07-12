@@ -1,5 +1,7 @@
 package com.lwb.yupao.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.lwb.yupao.common.BaseResult;
 import com.lwb.yupao.model.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -59,6 +61,11 @@ public interface UserService extends IService<User> {
      * @return User
      */
     User getCurrentUser(HttpServletRequest request);
+    /**
+     * 推荐用户
+     *
+     */
+    BaseResult<IPage<User>> recommendUser(HttpServletRequest request);
     /**
      * 用户脱敏
      * @param originUser 原始用户信息

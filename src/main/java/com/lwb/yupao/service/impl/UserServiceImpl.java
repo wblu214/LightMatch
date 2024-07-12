@@ -1,28 +1,33 @@
 package com.lwb.yupao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.lwb.yupao.common.BaseResult;
 import com.lwb.yupao.common.BusinessesException;
 import com.lwb.yupao.common.ErrorCode;
 import com.lwb.yupao.model.User;
 import com.lwb.yupao.service.UserService;
 import com.lwb.yupao.mapper.UserMapper;
+import com.lwb.yupao.utils.ResultUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 
-import java.nio.file.OpenOption;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -40,6 +45,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Resource
     private UserMapper userMapper;
+    @Resource
+    private RedisTemplate<String,Object> redisTemplate;
     /**
      * 用户注册
      * @param   account 用户名 password 密码 checkPassword 验证码
@@ -127,6 +134,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User safetyUser = getSafetyUser(user);
         //5.记录用户登录态
         request.getSession().setAttribute(USER_LOGIN_STATE,safetyUser);
+        redisTemplate.opsForValue().set(USER_LOGIN_STATE,safetyUser,10, TimeUnit.MINUTES);
         return safetyUser;
     }
     /**
@@ -139,6 +147,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public int userLogout(HttpServletRequest request) {
         //移除登录态
         request.getSession().removeAttribute(USER_LOGIN_STATE);
+        redisTemplate.opsForValue().set(USER_LOGIN_STATE,"",10, TimeUnit.MINUTES);
         return 0;
     }
 
@@ -202,23 +211,58 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 throw new BusinessesException(ErrorCode.FORBIDDEN);
             }
         }
-        //更新用户信息
+        int result;
         try {
-            return userMapper.updateById(user);
+            //更新用户信息
+            result =  userMapper.updateById(user);
+            //更新缓存
+            User updateUser = userMapper.selectById(user.getId());
+            redisTemplate.opsForValue().set(USER_LOGIN_STATE,updateUser,10, TimeUnit.MINUTES);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        return result;
     }
     public User getCurrentUser(HttpServletRequest request) {
         if (request == null) {
             return null;
         }
-         User user = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
-        if (user == null) {
-            throw new BusinessesException(ErrorCode.USER_NOT_LOGIN);
+         User currentUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+        try {
+            if (currentUser == null) {
+                if (redisTemplate.opsForValue().get(USER_LOGIN_STATE) != null) {
+                    currentUser = (User) redisTemplate.opsForValue().get(USER_LOGIN_STATE);
+                    return currentUser;
+                }
+                throw new BusinessesException(ErrorCode.USER_NOT_LOGIN);
+            }
+        } catch (BusinessesException e) {
+            throw new RuntimeException(e);
         }
-        return user;
+        return currentUser;
     }
+
+    @Override
+    public BaseResult<IPage<User>> recommendUser(HttpServletRequest request) {
+        User loginUser = getCurrentUser(request);
+        String redisKey = String.format("yupao:user:recommend:%s", loginUser.getId());
+        ValueOperations<String, Object> redis = redisTemplate.opsForValue();
+        IPage<User>  redisPage = (IPage<User>) redis.get(redisKey);
+        //有缓存，读缓存
+        if (redisPage != null){
+            return ResultUtil.success(redisPage);
+        }
+        //没有缓存，读数据库，写缓存
+        IPage<User>  page = page(new Page<>(1,10));
+        try {
+            redis.set(redisKey,page,10, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            log.error("Redis写入失败",e);
+            throw new RuntimeException(e);
+        }
+        return ResultUtil.success(page);
+    }
+
     /**
      * 用户脱敏
      * @param originUser 初始用户
@@ -240,7 +284,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         safetyUser.setStatus(originUser.getStatus());
         safetyUser.setCreateTime(originUser.getCreateTime());
         safetyUser.setTags(originUser.getTags());
-//        safetyUser.setCode(originUser.getCode());
+        safetyUser.setCode(originUser.getCode());
         safetyUser.setProfile(originUser.getProfile());
         return safetyUser;
     }

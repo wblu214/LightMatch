@@ -2,6 +2,7 @@ package com.lwb.yupao.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lwb.yupao.common.BaseResult;
 import com.lwb.yupao.common.BusinessesException;
 import com.lwb.yupao.common.ErrorCode;
@@ -12,11 +13,12 @@ import com.lwb.yupao.service.UserService;
 import com.lwb.yupao.utils.ResultUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import static com.lwb.yupao.enums.UserEnum.USER_LOGIN_STATE;
@@ -29,11 +31,13 @@ import static com.lwb.yupao.enums.UserEnum.USER_LOGIN_STATE;
  */
 @RestController
 @RequestMapping("user")
+@Slf4j
 public class UserController {
 
     @Resource
     private UserService userService;
-
+    @Resource
+    private RedisTemplate<String,Object> redisTemplate;
     /**
      * 用户注册
      * @param userRequest 用户注册请求体
@@ -115,8 +119,16 @@ public class UserController {
     @GetMapping("/current")
     BaseResult<User> getCurrentUser(HttpServletRequest request) {
         User currentUser =  (User) request.getSession().getAttribute(USER_LOGIN_STATE);
-        if (currentUser == null) {
-            throw new BusinessesException(ErrorCode.USER_NOT_LOGIN);
+        try {
+            if (currentUser == null) {
+                if (redisTemplate.opsForValue().get(USER_LOGIN_STATE) != null) {
+                    currentUser = (User) redisTemplate.opsForValue().get(USER_LOGIN_STATE);
+                    return ResultUtil.success(currentUser);
+                }
+                throw new BusinessesException(ErrorCode.USER_NOT_LOGIN);
+            }
+        } catch (BusinessesException e) {
+            throw new RuntimeException(e);
         }
         long id = currentUser.getId();
         // TODO 检验用户是否合法
@@ -139,10 +151,11 @@ public class UserController {
         return ResultUtil.success(userList);
     }
     @GetMapping("/recommend")
-    BaseResult<List<User>> recommend(HttpServletRequest request){
-        List<User> userList = userService.list();
-        List<User> collect = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
-        return ResultUtil.success(collect);
+    BaseResult<IPage<User>> recommend(HttpServletRequest request){
+        if (request == null){
+            return  null;
+        }
+        return userService.recommendUser(request);
     }
     @PostMapping("/update")
     BaseResult<Integer> updateUser(@RequestBody User user,HttpServletRequest request) {
