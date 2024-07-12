@@ -16,10 +16,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.lwb.yupao.enums.UserEnum.ROLE_ADMIN;
 import static com.lwb.yupao.enums.UserEnum.USER_LOGIN_STATE;
 
 
@@ -30,7 +29,6 @@ import static com.lwb.yupao.enums.UserEnum.USER_LOGIN_STATE;
  */
 @RestController
 @RequestMapping("user")
-@CrossOrigin(origins= "http://localhost:5173")
 public class UserController {
 
     @Resource
@@ -92,7 +90,7 @@ public class UserController {
     }
     @GetMapping("/search")
     BaseResult<List<User>> getUserList(String username, HttpServletRequest request) {
-        if (isAdmin(request)) {
+        if (userService.isAdmin(request)) {
             throw new BusinessesException(ErrorCode.FORBIDDEN);
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -105,7 +103,7 @@ public class UserController {
 
     @PostMapping("/delete")
     BaseResult<Boolean> deleteUser(long id, HttpServletRequest request) {
-        if (isAdmin(request)) {
+        if (userService.isAdmin(request)) {
             throw new BusinessesException(ErrorCode.FORBIDDEN);
         }
         if (id < 0) {
@@ -118,7 +116,7 @@ public class UserController {
     BaseResult<User> getCurrentUser(HttpServletRequest request) {
         User currentUser =  (User) request.getSession().getAttribute(USER_LOGIN_STATE);
         if (currentUser == null) {
-            throw new BusinessesException(ErrorCode.NULL_ERROR);
+            throw new BusinessesException(ErrorCode.USER_NOT_LOGIN);
         }
         long id = currentUser.getId();
         // TODO 检验用户是否合法
@@ -140,13 +138,20 @@ public class UserController {
         List<User> userList = userService.searchUserByTags(tagList);
         return ResultUtil.success(userList);
     }
-    /**
-     * 判断是否为管理员
-     * @param request HttpServletRequest
-     * @return boolean
-     */
-    private boolean isAdmin(HttpServletRequest request) {
-        User safeUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
-        return safeUser != null && safeUser.getUserRole() == ROLE_ADMIN;
+    @GetMapping("/recommend")
+    BaseResult<List<User>> recommend(HttpServletRequest request){
+        List<User> userList = userService.list();
+        List<User> collect = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        return ResultUtil.success(collect);
     }
+    @PostMapping("/update")
+    BaseResult<Integer> updateUser(@RequestBody User user,HttpServletRequest request) {
+        //校验参数是否为空
+        if (user == null) {
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
+        }
+        int result = userService.updateUser(user, request);
+        return ResultUtil.success(result);
+    }
+
 }

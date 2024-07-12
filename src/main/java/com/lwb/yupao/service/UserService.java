@@ -6,6 +6,9 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
+import static com.lwb.yupao.enums.UserEnum.ROLE_ADMIN;
+import static com.lwb.yupao.enums.UserEnum.USER_LOGIN_STATE;
+
 /**
 * @author 路文斌
 * &#064;description  针对表【user(用户表)】的数据库操作Service
@@ -42,11 +45,33 @@ public interface UserService extends IService<User> {
      * @return List<User>
      */
     List<User> searchUserByTags(List<String> tagList);
+    /**
+     * 更新用户信息
+     * @param user 用户信息
+     * @param request HttpServletRequest
+     * @return int
+     */
+    int updateUser(User user,HttpServletRequest request);
 
+    /**
+     * 获取当前用户
+     * @param request HttpServletRequest
+     * @return User
+     */
+    User getCurrentUser(HttpServletRequest request);
     /**
      * 用户脱敏
      * @param originUser 原始用户信息
      * @return  脱敏后的用户信息
      */
     User getSafetyUser(User originUser);
+    /**
+     * 判断是否为管理员
+     * @param request HttpServletRequest
+     * @return boolean
+     */
+    default boolean isAdmin(HttpServletRequest request) {
+        User safeUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+        return safeUser != null && safeUser.getUserRole() == ROLE_ADMIN;
+    }
 }

@@ -1,6 +1,7 @@
 package com.lwb.yupao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -187,6 +188,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 }
 
+    @Override
+    public int updateUser(User user, HttpServletRequest request) {
+        //判断用户是否存在
+        User u = userMapper.selectById(user.getId());
+        if(u == null){
+            throw new BusinessesException(ErrorCode.USER_NOT_EXIST);
+        }
+        //校验权限
+        if (!isAdmin(request)){
+            User currentUser = getCurrentUser(request);
+            if(!user.getId().equals(currentUser.getId())){
+                throw new BusinessesException(ErrorCode.FORBIDDEN);
+            }
+        }
+        //更新用户信息
+        try {
+            return userMapper.updateById(user);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public User getCurrentUser(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+         User user = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+        if (user == null) {
+            throw new BusinessesException(ErrorCode.USER_NOT_LOGIN);
+        }
+        return user;
+    }
     /**
      * 用户脱敏
      * @param originUser 初始用户
@@ -200,7 +232,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User safetyUser = new User();
         safetyUser.setId(originUser.getId());
         safetyUser.setUsername(originUser.getUsername());
-        safetyUser.setUserAccount(originUser.getUserAccount());
+//        safetyUser.setUserAccount(originUser.getUserAccount());
         safetyUser.setImageUrl(originUser.getImageUrl());
         safetyUser.setGender(originUser.getGender());
         safetyUser.setPhone(originUser.getPhone());
@@ -208,7 +240,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         safetyUser.setStatus(originUser.getStatus());
         safetyUser.setCreateTime(originUser.getCreateTime());
         safetyUser.setTags(originUser.getTags());
-        safetyUser.setCode(originUser.getCode());
+//        safetyUser.setCode(originUser.getCode());
         safetyUser.setProfile(originUser.getProfile());
         return safetyUser;
     }
