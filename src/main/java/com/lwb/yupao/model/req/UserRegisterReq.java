@@ -4,11 +4,13 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+
 @Data
-public class UserLoginRequest implements Serializable {
+public class UserRegisterReq implements Serializable {
 
     @Serial
-    private static final long serialVersionUID = -803235316627051162L;
+    private static final long serialVersionUID = 3191210229314632079L;
     private String userAccount;
     private String userPassword;
+    private String checkPassword;
 }

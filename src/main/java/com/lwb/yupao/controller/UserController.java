@@ -7,8 +7,8 @@ import com.lwb.yupao.common.BaseResult;
 import com.lwb.yupao.common.BusinessesException;
 import com.lwb.yupao.common.ErrorCode;
 import com.lwb.yupao.model.User;
-import com.lwb.yupao.model.req.UserLoginRequest;
-import com.lwb.yupao.model.req.UserRegisterRequest;
+import com.lwb.yupao.model.req.UserLoginReq;
+import com.lwb.yupao.model.req.UserRegisterReq;
 import com.lwb.yupao.service.UserService;
 import com.lwb.yupao.utils.ResultUtil;
 import jakarta.annotation.Resource;
@@ -44,7 +44,7 @@ public class UserController {
      * @return Long
      */
     @PostMapping("/register")
-    BaseResult<Long> saveUser(@RequestBody UserRegisterRequest userRequest) {
+    BaseResult<Long> saveUser(@RequestBody UserRegisterReq userRequest) {
         if (userRequest == null) {
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
@@ -66,7 +66,7 @@ public class UserController {
      * @return User
      */
     @PostMapping("/login")
-    BaseResult<User> loginUser(@RequestBody UserLoginRequest userRequest, HttpServletRequest request) {
+    BaseResult<User> loginUser(@RequestBody UserLoginReq userRequest, HttpServletRequest request) {
         if (userRequest == null) {
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
