@@ -17,9 +17,9 @@ public class Page implements Serializable {
     /**
      * 页面大小
      */
-    protected int pageSize;
+    protected int pageSize = 10;
     /**
      * 当前页码
      */
-    protected int pageNum;
+    protected int pageNum = 1;
 }
