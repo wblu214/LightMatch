@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import static com.lwb.yupao.enums.UserEnum.USER_LOGIN_STATE;
+import static com.lwb.yupao.enums.UserPrefix.USER_LOGIN_STATE;
 
 
 /**

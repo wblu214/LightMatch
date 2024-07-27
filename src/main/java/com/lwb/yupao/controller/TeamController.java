@@ -6,15 +6,17 @@ import com.lwb.yupao.common.BaseResult;
 import com.lwb.yupao.common.BusinessesException;
 import com.lwb.yupao.common.ErrorCode;
 import com.lwb.yupao.model.Team;
+import com.lwb.yupao.model.User;
+import com.lwb.yupao.model.req.TeamCreateReq;
 import com.lwb.yupao.model.req.TeamReq;
 import com.lwb.yupao.service.TeamService;
+import com.lwb.yupao.service.UserService;
 import com.lwb.yupao.utils.ResultUtil;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
-
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 @RestController
@@ -23,16 +25,18 @@ import java.util.List;
 public class TeamController {
     @Resource
     private TeamService teamService;
-    @PostMapping("/add")
-    public BaseResult<Long> addTeam(@RequestBody Team team) {
-        if(team == null){
-            throw new BusinessesException(ErrorCode.NULL_ERROR,"team不能为空");
+    @Resource
+    private UserService  userService;
+    @PostMapping("/create")
+    public BaseResult<Long> createTeam(@RequestBody TeamCreateReq teamCreateReq, HttpServletRequest request) {
+        if(teamCreateReq == null){
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
-        boolean addResult = teamService.save(team);
-        if(!addResult){
-            throw new BusinessesException(ErrorCode.SYSTEM_ERROR,"创建失败");
-        }
-        return ResultUtil.success(team.getId());
+        User loginUser = userService.getCurrentUser(request);
+        Team team = new Team();
+        BeanUtils.copyProperties(teamCreateReq,team);
+        Long result = teamService.createTeam(team, loginUser);
+        return ResultUtil.success(result);
     }
     @PostMapping("/delete")
     public BaseResult<Boolean> deleteTeam(@RequestParam long id) {

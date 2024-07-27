@@ -4,7 +4,7 @@ package com.lwb.yupao.enums;
  * 用户常量
  * @author 路文斌
  */
-public interface UserEnum {
+public interface UserPrefix {
     /**
      * 用户登录态键
      */

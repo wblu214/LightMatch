@@ -8,8 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
-import static com.lwb.yupao.enums.UserEnum.ROLE_ADMIN;
-import static com.lwb.yupao.enums.UserEnum.USER_LOGIN_STATE;
+import static com.lwb.yupao.enums.UserPrefix.ROLE_ADMIN;
+import static com.lwb.yupao.enums.UserPrefix.USER_LOGIN_STATE;
 
 /**
 * @author 路文斌
