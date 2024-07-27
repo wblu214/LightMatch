@@ -5,29 +5,39 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lwb.yupao.common.BusinessesException;
 import com.lwb.yupao.common.ErrorCode;
 import com.lwb.yupao.enums.TeamStatusEnum;
+import com.lwb.yupao.mapper.UserMapper;
 import com.lwb.yupao.mapper.UserTeamMapper;
 import com.lwb.yupao.model.Team;
 import com.lwb.yupao.model.User;
 import com.lwb.yupao.model.UserTeam;
+import com.lwb.yupao.model.req.TeamReq;
+import com.lwb.yupao.model.vo.TeamUserVO;
+import com.lwb.yupao.model.vo.UserVO;
 import com.lwb.yupao.service.TeamService;
 import com.lwb.yupao.mapper.TeamMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 /**
 * @author 路文斌
-* @description 针对表【team(队伍)】的数据库操作Service实现
-* @createDate 2024-07-25 19:33:52
-*/
+* &#064;description  针对表【team(队伍)】的数据库操作Service实现
+* &#064;createDate  2024-07-25 19:33:52
+ */
 @Service
 public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements TeamService{
     @Resource
-       private UserTeamMapper userTeamMapper;
+    private UserTeamMapper userTeamMapper;
+    @Resource
+    private UserMapper userMapper;
     @Override
     @Transactional
     public Long createTeam(Team team, User loginUser) {
@@ -67,7 +77,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
         //4.校验过期时间
         Date expireTime = team.getExpireTime();
         if(new Date().after(expireTime)){
-            throw new BusinessesException(ErrorCode.PARAMS_ERROR,"创建时间不能晚于当前时间");
+            throw new BusinessesException(ErrorCode.PARAMS_ERROR,"过期时间不能小于当前时间");
         }
         // 5.校验一个用户只能创建5个队伍
         QueryWrapper<Team>  queryWrapper = new QueryWrapper<>();
@@ -93,6 +103,75 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
             throw new BusinessesException(ErrorCode.SYSTEM_ERROR,"创建队伍失败");
         }
         return 0L;
+    }
+
+    @Override
+    public List<TeamUserVO> listTeams(TeamReq teamReq,boolean isAdmin) {
+        //组合查询条件
+        QueryWrapper<Team> queryWrapper = new QueryWrapper<>();
+        //已过期的不展示
+        queryWrapper.and(qw ->qw.gt("expireTime",new Date()).or().isNull("expireTime"));
+        if(teamReq != null){
+            Long id = teamReq.getId();
+            if(id != null && id > 0){
+                queryWrapper.eq("id",id);
+            }
+            String searchText = teamReq.getSearchText();
+            if (StringUtils.isNotBlank(searchText)){
+                queryWrapper.and(qw -> qw.like("name",searchText).or().like("description",searchText));
+            }
+            String name = teamReq.getName();
+            if (StringUtils.isNotBlank(name)){
+                queryWrapper.like("name",name);
+            }
+            String description = teamReq.getDescription();
+            if (StringUtils.isNotBlank(description)){
+                queryWrapper.like("description",description);
+            }
+            Integer maxNum = teamReq.getMaxNum();
+            if (maxNum != null && maxNum > 0){
+                queryWrapper.eq("maxNum",maxNum);
+            }
+            Long userId = teamReq.getUserId();
+            if( userId != null && userId > 0){
+                queryWrapper.eq("userId",userId);
+            }
+            Integer status = teamReq.getStatus();
+            TeamStatusEnum statusEnum = TeamStatusEnum.getEnumByValue(status);
+
+            if (statusEnum == null){
+                statusEnum = TeamStatusEnum.PUBLIC;
+            }
+            if (!isAdmin && !TeamStatusEnum.PUBLIC.equals(statusEnum)){
+                throw new BusinessesException(ErrorCode.FORBIDDEN);
+            }
+            if (status != null && status > -1){
+                queryWrapper.eq("status",statusEnum.getCode());
+            }
+        }
+        List<Team> teamList = this.list(queryWrapper);
+        //关联查询用户信息
+        if (CollectionUtils.isEmpty(teamList)){
+            return new ArrayList<>();
+        }
+        List<TeamUserVO> teamUserVOS = new ArrayList<>();
+        for (Team team : teamList){
+            Long userId = team.getUserId();
+            if(userId == null){
+                continue;
+            }
+            User user = userMapper.selectById(userId);
+            //脱敏
+            TeamUserVO teamUserVO = new TeamUserVO();
+            BeanUtils.copyProperties(team,teamUserVO);
+            if (user != null){
+                UserVO userVO = new UserVO();
+                BeanUtils.copyProperties(user,userVO);
+                teamUserVO.setCreateUser(userVO);
+            }
+            teamUserVOS.add(teamUserVO);
+        }
+        return teamUserVOS;
     }
 }
 

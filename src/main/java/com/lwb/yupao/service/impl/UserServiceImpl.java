@@ -211,6 +211,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 throw new BusinessesException(ErrorCode.FORBIDDEN);
             }
         }
+        //密码加密(MD5加盐)
+        String saltPassword = DigestUtils.md5DigestAsHex(( SALT + user.getUserAccount() + user.getUserPassword()).getBytes());
+        user.setUserPassword(saltPassword);
         int result;
         try {
             //更新用户信息
@@ -286,6 +289,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         safetyUser.setTags(originUser.getTags());
         safetyUser.setCode(originUser.getCode());
         safetyUser.setProfile(originUser.getProfile());
+        safetyUser.setUserRole(originUser.getUserRole());
         return safetyUser;
     }
 }

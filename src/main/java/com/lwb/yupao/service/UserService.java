@@ -78,7 +78,11 @@ public interface UserService extends IService<User> {
      * @return boolean
      */
     default boolean isAdmin(HttpServletRequest request) {
-        User safeUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+        User safeUser;
+        safeUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+        if (safeUser == null){
+            safeUser = getCurrentUser(request);
+        }
         return safeUser != null && safeUser.getUserRole() == ROLE_ADMIN;
     }
 }

@@ -9,6 +9,7 @@ import com.lwb.yupao.model.Team;
 import com.lwb.yupao.model.User;
 import com.lwb.yupao.model.req.TeamCreateReq;
 import com.lwb.yupao.model.req.TeamReq;
+import com.lwb.yupao.model.vo.TeamUserVO;
 import com.lwb.yupao.service.TeamService;
 import com.lwb.yupao.service.UserService;
 import com.lwb.yupao.utils.ResultUtil;
@@ -74,14 +75,12 @@ public class TeamController {
         return ResultUtil.success(team);
     }
     @GetMapping("/list")
-    public BaseResult<List<Team>> getListTeams(TeamReq teamReq) {
+    public BaseResult<List<TeamUserVO>> getListTeams(TeamReq teamReq, HttpServletRequest request) {
         if(teamReq == null){
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
-        Team team = new Team();
-        BeanUtils.copyProperties(teamReq,team);
-        QueryWrapper<Team> queryWrapper = new QueryWrapper<>(team);
-        List<Team> teamList = teamService.list(queryWrapper);
+        boolean isAdmin = userService.isAdmin(request);
+        List<TeamUserVO> teamList = teamService.listTeams(teamReq,isAdmin);
         return ResultUtil.success(teamList);
     }
     @GetMapping("/list/page")
