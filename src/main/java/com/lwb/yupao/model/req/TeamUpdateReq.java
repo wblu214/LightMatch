@@ -1,17 +1,14 @@
 package com.lwb.yupao.model.req;
-
-import com.lwb.yupao.common.Page;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Date;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class TeamReq extends Page implements Serializable {
+public class TeamUpdateReq implements Serializable {
     @Serial
-    private static final long serialVersionUID = -8209894175670684495L;
+    private static final long serialVersionUID = 5774963918113565043L;
     /**
      * id
      */
@@ -22,22 +19,16 @@ public class TeamReq extends Page implements Serializable {
     private String name;
 
     /**
-     * 搜索关键词
-     */
-    private String searchText;
-
-    /**
      * 描述
      */
     private String description;
-
     /**
-     * 最大人数
+     * 过期时间
      */
-    private Integer maxNum;
+    private Date expireTime;
 
     /**
-     * 用户id
+     * 用户id（队长 id）
      */
     private Long userId;
 
@@ -45,5 +36,9 @@ public class TeamReq extends Page implements Serializable {
      * 0 - 公开，1 - 私有，2 - 加密
      */
     private Integer status;
-}
 
+    /**
+     * 密码
+     */
+    private String password;
+}

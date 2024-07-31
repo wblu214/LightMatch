@@ -4,7 +4,9 @@ import com.lwb.yupao.model.Team;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.lwb.yupao.model.User;
 import com.lwb.yupao.model.req.TeamReq;
+import com.lwb.yupao.model.req.TeamUpdateReq;
 import com.lwb.yupao.model.vo.TeamUserVO;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
@@ -19,4 +21,5 @@ public interface TeamService extends IService<Team> {
      */
     Long createTeam(Team team, User loginUser);
     List<TeamUserVO> listTeams(TeamReq teamReq,boolean isAdmin);
+    boolean updateTeam(TeamUpdateReq teamUpdateReq, HttpServletRequest request);
 }

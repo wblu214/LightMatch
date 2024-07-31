@@ -11,11 +11,14 @@ import com.lwb.yupao.model.Team;
 import com.lwb.yupao.model.User;
 import com.lwb.yupao.model.UserTeam;
 import com.lwb.yupao.model.req.TeamReq;
+import com.lwb.yupao.model.req.TeamUpdateReq;
 import com.lwb.yupao.model.vo.TeamUserVO;
 import com.lwb.yupao.model.vo.UserVO;
 import com.lwb.yupao.service.TeamService;
 import com.lwb.yupao.mapper.TeamMapper;
+import com.lwb.yupao.service.UserService;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -38,6 +41,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
     private UserTeamMapper userTeamMapper;
     @Resource
     private UserMapper userMapper;
+    @Resource
+    private UserService userService;
     @Override
     @Transactional
     public Long createTeam(Team team, User loginUser) {
@@ -172,6 +177,28 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
             teamUserVOS.add(teamUserVO);
         }
         return teamUserVOS;
+    }
+
+    @Override
+    public boolean updateTeam(TeamUpdateReq teamUpdateReq, HttpServletRequest request) {
+        if (teamUpdateReq == null){
+            throw new BusinessesException(ErrorCode.PARAMS_ERROR);
+        }
+        Long id = teamUpdateReq.getId();
+        if (id == null || id < 1){
+            throw new BusinessesException(ErrorCode.USER_NOT_EXIST);
+        }
+        Team oldTeam = this.getById(id);
+        if (oldTeam == null){
+            throw new BusinessesException(ErrorCode.USER_NOT_EXIST);
+        }
+        User loginUser = userService.getCurrentUser(request);
+        //只有管理员和本人才能修改
+        if(!userService.isAdmin(request) && !oldTeam.getUserId().equals(loginUser.getId())){
+            throw new BusinessesException(ErrorCode.FORBIDDEN);
+        }
+         BeanUtils.copyProperties(teamUpdateReq,oldTeam);
+         return this.updateById(oldTeam);
     }
 }
 

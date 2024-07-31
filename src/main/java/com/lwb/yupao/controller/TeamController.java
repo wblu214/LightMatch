@@ -9,6 +9,7 @@ import com.lwb.yupao.model.Team;
 import com.lwb.yupao.model.User;
 import com.lwb.yupao.model.req.TeamCreateReq;
 import com.lwb.yupao.model.req.TeamReq;
+import com.lwb.yupao.model.req.TeamUpdateReq;
 import com.lwb.yupao.model.vo.TeamUserVO;
 import com.lwb.yupao.service.TeamService;
 import com.lwb.yupao.service.UserService;
@@ -51,12 +52,11 @@ public class TeamController {
         return ResultUtil.success(true);
     }
     @PostMapping("/update")
-    public BaseResult<Boolean> updateTeam(@RequestBody Team team) {
-        if(team == null){
+    public BaseResult<Boolean> updateTeam(@RequestBody TeamUpdateReq teamUpdateReq,HttpServletRequest request) {
+        if(teamUpdateReq == null){
             throw new BusinessesException(ErrorCode.NULL_ERROR,"team不能为空");
         }
-        boolean updateResult = teamService.updateById(team);
-
+        boolean updateResult = teamService.updateTeam(teamUpdateReq, request);
         if(!updateResult) {
             throw new BusinessesException(ErrorCode.SYSTEM_ERROR, "更新失败");
         }
