@@ -46,14 +46,14 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
     @Override
     @Transactional
     public Long createTeam(Team team, User loginUser) {
-        final long userId = loginUser.getId();
-        //1.校验参数是否为空
-        if(team == null){
-            throw  new BusinessesException(ErrorCode.NULL_ERROR);
-        }
-        //2.校验是否登录，未登录不允许创建
+        //1.校验是否登录，未登录不允许创建
         if(loginUser == null){
             throw new BusinessesException(ErrorCode.USER_NOT_LOGIN);
+        }
+        final long userId = loginUser.getId();
+        //2.校验参数是否为空
+        if(team == null){
+            throw  new BusinessesException(ErrorCode.NULL_ERROR);
         }
         //3.校验信息
         int maxNum = Optional.ofNullable(team.getMaxNum()).orElse(0);
