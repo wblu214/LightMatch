@@ -186,11 +186,11 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
         }
         Long id = teamUpdateReq.getId();
         if (id == null || id < 1){
-            throw new BusinessesException(ErrorCode.USER_NOT_EXIST);
+            throw new BusinessesException(ErrorCode.USER_NOT_EXIST,"队伍不存在");
         }
         Team oldTeam = this.getById(id);
         if (oldTeam == null){
-            throw new BusinessesException(ErrorCode.USER_NOT_EXIST);
+            throw new BusinessesException(ErrorCode.USER_NOT_EXIST,"队伍不存在");
         }
         User loginUser = userService.getCurrentUser(request);
         //只有管理员和本人才能修改
