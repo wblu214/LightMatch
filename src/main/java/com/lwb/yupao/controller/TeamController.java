@@ -97,8 +97,8 @@ public class TeamController {
         return ResultUtil.success(teamPage);
     }
 
-    @GetMapping("/join")
-    public BaseResult<Boolean> joinTeam(TeamJoinReq teamJoinReq, HttpServletRequest request) {
+    @PostMapping("/join")
+    public BaseResult<Boolean> joinTeam(@RequestBody TeamJoinReq teamJoinReq, HttpServletRequest request) {
         if (teamJoinReq == null) {
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
