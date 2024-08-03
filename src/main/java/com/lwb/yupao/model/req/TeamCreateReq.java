@@ -27,12 +27,6 @@ public class TeamCreateReq implements Serializable {
      * 过期时间
      */
     private Date expireTime;
-
-    /**
-     * 用户id（队长 id）
-     */
-    private Long userId;
-
     /**
      * 0 - 公开，1 - 私有，2 - 加密
      */
