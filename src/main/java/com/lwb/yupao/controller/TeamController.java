@@ -7,10 +7,7 @@ import com.lwb.yupao.common.BusinessesException;
 import com.lwb.yupao.common.ErrorCode;
 import com.lwb.yupao.model.Team;
 import com.lwb.yupao.model.User;
-import com.lwb.yupao.model.req.TeamCreateReq;
-import com.lwb.yupao.model.req.TeamJoinReq;
-import com.lwb.yupao.model.req.TeamReq;
-import com.lwb.yupao.model.req.TeamUpdateReq;
+import com.lwb.yupao.model.req.*;
 import com.lwb.yupao.model.vo.TeamUserVO;
 import com.lwb.yupao.service.TeamService;
 import com.lwb.yupao.service.UserService;
@@ -102,7 +99,15 @@ public class TeamController {
         if (teamJoinReq == null) {
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
-        boolean joinResult = teamService.joinTeam(teamJoinReq,request);
+        Boolean joinResult = teamService.joinTeam(teamJoinReq,request);
+        return ResultUtil.success(joinResult);
+    }
+    @PostMapping("/quit")
+    public BaseResult<Boolean> quitTeam(@RequestBody TeamQuitReq teamQuitReq, HttpServletRequest request) {
+        if (teamQuitReq == null) {
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
+        }
+        Boolean joinResult = teamService.quitTeam(teamQuitReq,request);
         return ResultUtil.success(joinResult);
     }
 }
