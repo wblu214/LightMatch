@@ -8,6 +8,7 @@ import com.lwb.yupao.common.ErrorCode;
 import com.lwb.yupao.model.Team;
 import com.lwb.yupao.model.User;
 import com.lwb.yupao.model.req.TeamCreateReq;
+import com.lwb.yupao.model.req.TeamJoinReq;
 import com.lwb.yupao.model.req.TeamReq;
 import com.lwb.yupao.model.req.TeamUpdateReq;
 import com.lwb.yupao.model.vo.TeamUserVO;
@@ -94,5 +95,14 @@ public class TeamController {
         Page<Team> page = new Page<>(teamReq.getPageNum(), teamReq.getPageSize());
         Page<Team> teamPage = teamService.page(page,queryWrapper);
         return ResultUtil.success(teamPage);
+    }
+
+    @PostMapping("/join")
+    public BaseResult<Boolean> joinTeam(@RequestBody TeamJoinReq teamJoinReq, HttpServletRequest request) {
+        if (teamJoinReq == null) {
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
+        }
+        boolean joinResult = teamService.joinTeam(teamJoinReq,request);
+        return ResultUtil.success(joinResult);
     }
 }

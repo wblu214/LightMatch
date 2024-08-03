@@ -12,9 +12,9 @@ public enum TeamStatusEnum {
     PUBLIC(0,"公开"),
     PRIVATE(1,"私有"),
     SECRET(2,"加密");
-    private Integer code;
+    private final Integer code;
         
-    private String desc;
+    private final String desc;
     
     TeamStatusEnum(Integer code, String desc) {
         this.code = code;

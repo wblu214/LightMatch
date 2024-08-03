@@ -3,6 +3,7 @@ package com.lwb.yupao.service;
 import com.lwb.yupao.model.Team;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.lwb.yupao.model.User;
+import com.lwb.yupao.model.req.TeamJoinReq;
 import com.lwb.yupao.model.req.TeamReq;
 import com.lwb.yupao.model.req.TeamUpdateReq;
 import com.lwb.yupao.model.vo.TeamUserVO;
@@ -20,6 +21,16 @@ public interface TeamService extends IService<Team> {
      * 创建队伍
      */
     Long createTeam(Team team, User loginUser);
+    /**
+     * 查询队伍
+     */
     List<TeamUserVO> listTeams(TeamReq teamReq,boolean isAdmin);
+    /**
+     * 更新队伍
+     */
     boolean updateTeam(TeamUpdateReq teamUpdateReq, HttpServletRequest request);
+    /**
+     * 加入队伍
+     */
+    boolean joinTeam(TeamJoinReq teamJoinReq,HttpServletRequest request);
 }
