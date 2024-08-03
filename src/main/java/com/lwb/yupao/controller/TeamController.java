@@ -39,13 +39,13 @@ public class TeamController {
         return ResultUtil.success(result);
     }
     @PostMapping("/delete")
-    public BaseResult<Boolean> deleteTeam(@RequestParam long id) {
-        if(id <= 0){
+    public BaseResult<Boolean> deleteTeam(@RequestParam long teamId,HttpServletRequest request) {
+        if(teamId <= 0){
             throw new BusinessesException(ErrorCode.PARAMS_ERROR,"id为空或id错误");
         }
-        boolean deleteResult = teamService.removeById(id);
+        boolean deleteResult = teamService.deleteTeam(teamId,request);
         if(!deleteResult) {
-            throw new BusinessesException(ErrorCode.USER_NOT_EXIST);
+            throw new BusinessesException(ErrorCode.SYSTEM_ERROR, "删除失败");
         }
         return ResultUtil.success(true);
     }
