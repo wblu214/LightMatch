@@ -1,5 +1,7 @@
 package com.lwb.yupao.model.req;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -26,6 +28,7 @@ public class TeamCreateReq implements Serializable {
     /**
      * 过期时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date expireTime;
     /**
      * 0 - 公开，1 - 私有，2 - 加密

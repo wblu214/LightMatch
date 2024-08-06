@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -73,7 +74,7 @@ public class TeamController {
         return ResultUtil.success(team);
     }
     @GetMapping("/list")
-    public BaseResult<List<TeamUserVO>> getListTeams(TeamReq teamReq, HttpServletRequest request) {
+    public BaseResult<List<TeamUserVO>> getListTeams(TeamQueryReq teamReq, HttpServletRequest request) {
         if(teamReq == null){
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
@@ -82,7 +83,7 @@ public class TeamController {
         return ResultUtil.success(teamList);
     }
     @GetMapping("/list/page")
-    public BaseResult<Page<Team>> getPageTeams(TeamReq teamReq) {
+    public BaseResult<Page<Team>> getPageTeams(TeamQueryReq teamReq) {
         if(teamReq == null){
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }

@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class TeamReq extends Page implements Serializable {
+public class TeamQueryReq extends Page implements Serializable {
     @Serial
     private static final long serialVersionUID = -8209894175670684495L;
     /**

@@ -41,7 +41,10 @@ public class UserVO implements Serializable {
      * 标签列表 json
      */
     private String tags;
-
+    /**
+     * 用户头像
+     */
+    private String imageUrl;
     /**
      * 创建时间
      */

@@ -4,8 +4,8 @@ import com.lwb.yupao.model.Team;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.lwb.yupao.model.User;
 import com.lwb.yupao.model.req.TeamJoinReq;
+import com.lwb.yupao.model.req.TeamQueryReq;
 import com.lwb.yupao.model.req.TeamQuitReq;
-import com.lwb.yupao.model.req.TeamReq;
 import com.lwb.yupao.model.req.TeamUpdateReq;
 import com.lwb.yupao.model.vo.TeamUserVO;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +25,7 @@ public interface TeamService extends IService<Team> {
     /**
      * 查询队伍
      */
-    List<TeamUserVO> listTeams(TeamReq teamReq,boolean isAdmin);
+    List<TeamUserVO> listTeams(TeamQueryReq teamReq, boolean isAdmin);
     /**
      * 更新队伍
      */
