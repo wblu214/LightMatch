@@ -28,7 +28,7 @@ public class TeamCreateReq implements Serializable {
     /**
      * 过期时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date expireTime;
     /**
      * 0 - 公开，1 - 私有，2 - 加密

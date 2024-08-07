@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -16,6 +17,10 @@ public class TeamQueryReq extends Page implements Serializable {
      * id
      */
     private Long id;
+    /**
+     * id列表
+     */
+    private List<Long> ids;
     /**
      * 队伍名称
      */
