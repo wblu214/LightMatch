@@ -69,7 +69,7 @@ public class TeamUserVO implements Serializable {
     /**
      * 已加入的用户数
      */
-    private Integer hasJoinNum;
+    private Integer currentNum;
 
     /**
      * 是否已加入队伍

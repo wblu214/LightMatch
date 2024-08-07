@@ -45,11 +45,11 @@ public class TeamController {
         return ResultUtil.success(result);
     }
     @PostMapping("/delete")
-    public BaseResult<Boolean> deleteTeam(@RequestParam long teamId,HttpServletRequest request) {
-        if(teamId <= 0){
+    public BaseResult<Boolean> deleteTeam(@RequestBody TeamQuitReq teamQuitReq,HttpServletRequest request) {
+        if(teamQuitReq == null || teamQuitReq.getTeamId() <= 0){
             throw new BusinessesException(ErrorCode.PARAMS_ERROR,"id为空或id错误");
         }
-        boolean deleteResult = teamService.deleteTeam(teamId,request);
+        boolean deleteResult = teamService.deleteTeam(teamQuitReq.getTeamId(),request);
         if(!deleteResult) {
             throw new BusinessesException(ErrorCode.SYSTEM_ERROR, "删除失败");
         }
@@ -146,6 +146,9 @@ public class TeamController {
         List<Long> teamIdList = userTeamList.stream().map(UserTeam::getTeamId).distinct().toList();
         teamQueryReq.setIds(teamIdList);
         List<TeamUserVO> teamList = teamService.listTeams(teamQueryReq,true);
+        for (TeamUserVO team : teamList) {
+            team.setHasJoin(true);
+        }
         return ResultUtil.success(teamList);
     }
 }

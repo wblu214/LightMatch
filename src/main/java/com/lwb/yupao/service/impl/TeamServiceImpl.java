@@ -101,6 +101,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
         //6.插入队伍表
         team.setId(null);
         team.setUserId(userId);
+        team.setCurrentNum(1);
         boolean teamResult = this.save(team);
         Long teamId = team.getId();
         if(!teamResult || teamId == null){
@@ -266,6 +267,9 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
         if (teamJoinNum >= team.getMaxNum()){
             throw new BusinessesException(ErrorCode.PARAMS_ERROR,"队伍已满,无法加入");
         }
+        //队伍人数加一
+        team.setCurrentNum(team.getCurrentNum()+1);
+        this.updateById(team);
         //新增用户队伍关系
         UserTeam userTeam = new UserTeam();
         userTeam.setUserId(userId);
@@ -313,9 +317,9 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
                 //获取第二个用户作为新的队长
                 UserTeam nextTeamUser = userTeams.get(1);
                 long nextTeamLeaderId = nextTeamUser.getUserId();
-                Team updateTeam = new Team();
-                updateTeam.setId(teamId);
+                Team updateTeam = this.getById(teamId);
                 updateTeam.setUserId(nextTeamLeaderId);
+                updateTeam.setCurrentNum(updateTeam.getCurrentNum()-1);
                 boolean updateResult = this.updateById(updateTeam);
                 if (!updateResult){
                     throw new BusinessesException(ErrorCode.SYSTEM_ERROR,"转让队长失败");

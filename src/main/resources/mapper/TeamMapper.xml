@@ -13,6 +13,8 @@
             <result property="userId" column="userId" jdbcType="BIGINT"/>
             <result property="status" column="status" jdbcType="INTEGER"/>
             <result property="password" column="password" jdbcType="VARCHAR"/>
+            <result property="imageUrl" column="imageUrl" jdbcType="VARCHAR"/>
+            <result property="currentNum" column="currentNum" jdbcType="INTEGER"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
             <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
@@ -21,7 +23,7 @@
     <sql id="Base_Column_List">
         id,name,description,
         maxNum,expireTime,userId,
-        status,password,createTime,
+        status,password,imageUrl,currentNum,createTime,
         updateTime,isDelete
     </sql>
 </mapper>
