@@ -1,4 +1,5 @@
 package com.lwb.yupao.model.req;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serial;
@@ -25,6 +26,7 @@ public class TeamUpdateReq implements Serializable {
     /**
      * 过期时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date expireTime;
 
     /**

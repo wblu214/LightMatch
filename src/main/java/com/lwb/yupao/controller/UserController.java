@@ -6,9 +6,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lwb.yupao.common.BaseResult;
 import com.lwb.yupao.common.BusinessesException;
 import com.lwb.yupao.common.ErrorCode;
+import com.lwb.yupao.enums.GenderEnum;
 import com.lwb.yupao.model.User;
 import com.lwb.yupao.model.req.UserLoginReq;
 import com.lwb.yupao.model.req.UserRegisterReq;
+import com.lwb.yupao.model.req.UserUpdateReq;
 import com.lwb.yupao.service.UserService;
 import com.lwb.yupao.utils.ResultUtil;
 import jakarta.annotation.Resource;
@@ -158,12 +160,12 @@ public class UserController {
         return userService.recommendUser(request);
     }
     @PostMapping("/update")
-    BaseResult<Integer> updateUser(@RequestBody User user,HttpServletRequest request) {
+    BaseResult<Integer> updateUser(@RequestBody UserUpdateReq userUpdateReq, HttpServletRequest request) {
         //校验参数是否为空
-        if (user == null) {
+        if (userUpdateReq == null) {
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
-        int result = userService.updateUser(user, request);
+        int result = userService.updateUser(userUpdateReq, request);
         return ResultUtil.success(result);
     }
 

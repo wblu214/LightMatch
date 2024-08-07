@@ -6,16 +6,21 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class TeamReq extends Page implements Serializable {
+public class TeamQueryReq extends Page implements Serializable {
     @Serial
     private static final long serialVersionUID = -8209894175670684495L;
     /**
      * id
      */
     private Long id;
+    /**
+     * id列表
+     */
+    private List<Long> ids;
     /**
      * 队伍名称
      */

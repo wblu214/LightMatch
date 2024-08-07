@@ -9,7 +9,9 @@ import com.google.gson.reflect.TypeToken;
 import com.lwb.yupao.common.BaseResult;
 import com.lwb.yupao.common.BusinessesException;
 import com.lwb.yupao.common.ErrorCode;
+import com.lwb.yupao.enums.GenderEnum;
 import com.lwb.yupao.model.User;
+import com.lwb.yupao.model.req.UserUpdateReq;
 import com.lwb.yupao.service.UserService;
 import com.lwb.yupao.mapper.UserMapper;
 import com.lwb.yupao.utils.ResultUtil;
@@ -17,6 +19,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -198,28 +201,35 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 }
 
     @Override
-    public int updateUser(User user, HttpServletRequest request) {
+    public int updateUser(UserUpdateReq userUpdateReq, HttpServletRequest request) {
         //判断用户是否存在
-        User u = userMapper.selectById(user.getId());
+        User u = userMapper.selectById(userUpdateReq.getId());
         if(u == null){
             throw new BusinessesException(ErrorCode.USER_NOT_EXIST);
         }
         //校验权限
         if (!isAdmin(request)){
             User currentUser = getCurrentUser(request);
-            if(!user.getId().equals(currentUser.getId())){
+            if(!userUpdateReq.getId().equals(currentUser.getId())){
                 throw new BusinessesException(ErrorCode.FORBIDDEN);
             }
         }
-        //密码加密(MD5加盐)
-        String saltPassword = DigestUtils.md5DigestAsHex(( SALT + user.getUserAccount() + user.getUserPassword()).getBytes());
-        user.setUserPassword(saltPassword);
+        if (userUpdateReq.getUserPassword() != null){
+            //密码加密(MD5加盐)
+            String saltPassword = DigestUtils.md5DigestAsHex(( SALT + u.getUserAccount() + userUpdateReq.getUserPassword()).getBytes());
+            userUpdateReq.setUserPassword(saltPassword);
+        }
         int result;
         try {
             //更新用户信息
+            User user = new User();
+            if (userUpdateReq.getGender() != null){
+                user.setGender(GenderEnum.getCode(userUpdateReq.getGender()));
+            }
+            BeanUtils.copyProperties(userUpdateReq,user);;
             result =  userMapper.updateById(user);
             //更新缓存
-            User updateUser = userMapper.selectById(user.getId());
+            User updateUser = userMapper.selectById(userUpdateReq.getId());
             redisTemplate.opsForValue().set(USER_LOGIN_STATE,updateUser,10, TimeUnit.MINUTES);
         } catch (Exception e) {
             throw new RuntimeException(e);

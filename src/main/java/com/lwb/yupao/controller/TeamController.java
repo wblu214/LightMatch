@@ -7,17 +7,21 @@ import com.lwb.yupao.common.BusinessesException;
 import com.lwb.yupao.common.ErrorCode;
 import com.lwb.yupao.model.Team;
 import com.lwb.yupao.model.User;
+import com.lwb.yupao.model.UserTeam;
 import com.lwb.yupao.model.req.*;
 import com.lwb.yupao.model.vo.TeamUserVO;
 import com.lwb.yupao.service.TeamService;
 import com.lwb.yupao.service.UserService;
+import com.lwb.yupao.service.UserTeamService;
 import com.lwb.yupao.utils.ResultUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("team")
@@ -27,6 +31,8 @@ public class TeamController {
     private TeamService teamService;
     @Resource
     private UserService  userService;
+    @Resource
+    private UserTeamService userTeamService;
     @PostMapping("/create")
     public BaseResult<Long> createTeam(@RequestBody TeamCreateReq teamCreateReq, HttpServletRequest request) {
         if(teamCreateReq == null){
@@ -73,16 +79,16 @@ public class TeamController {
         return ResultUtil.success(team);
     }
     @GetMapping("/list")
-    public BaseResult<List<TeamUserVO>> getListTeams(TeamReq teamReq, HttpServletRequest request) {
-        if(teamReq == null){
+    public BaseResult<List<TeamUserVO>> getListTeams(TeamQueryReq teamQueryReq, HttpServletRequest request) {
+        if(teamQueryReq == null){
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
         boolean isAdmin = userService.isAdmin(request);
-        List<TeamUserVO> teamList = teamService.listTeams(teamReq,isAdmin);
+        List<TeamUserVO> teamList = teamService.listTeams(teamQueryReq,isAdmin);
         return ResultUtil.success(teamList);
     }
     @GetMapping("/list/page")
-    public BaseResult<Page<Team>> getPageTeams(TeamReq teamReq) {
+    public BaseResult<Page<Team>> getPageTeams(TeamQueryReq teamReq) {
         if(teamReq == null){
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
@@ -109,5 +115,37 @@ public class TeamController {
         }
         Boolean joinResult = teamService.quitTeam(teamQuitReq,request);
         return ResultUtil.success(joinResult);
+    }
+
+    /**
+     * 获取我创建的队伍
+     */
+    @GetMapping("/list/my/create")
+    public BaseResult<List<TeamUserVO>> getMyCreateTeams(TeamQueryReq teamQueryReq, HttpServletRequest request) {
+        if(teamQueryReq == null){
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
+        }
+        User loginUser = userService.getCurrentUser(request);
+        teamQueryReq.setUserId(loginUser.getId());
+        List<TeamUserVO> teamList = teamService.listTeams(teamQueryReq,true);
+        return ResultUtil.success(teamList);
+    }
+    /**
+     * 获取我加入的队伍
+     */
+    @GetMapping("/list/my/join")
+    public BaseResult<List<TeamUserVO>> getMyJoinTeams(TeamQueryReq teamQueryReq, HttpServletRequest request) {
+        if(teamQueryReq == null){
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
+        }
+        User loginUser = userService.getCurrentUser(request);
+        QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userId",loginUser.getId());
+        List<UserTeam> userTeamList = userTeamService.list(queryWrapper);
+        //取出不重复的队伍id
+        List<Long> teamIdList = userTeamList.stream().map(UserTeam::getTeamId).distinct().toList();
+        teamQueryReq.setIds(teamIdList);
+        List<TeamUserVO> teamList = teamService.listTeams(teamQueryReq,true);
+        return ResultUtil.success(teamList);
     }
 }

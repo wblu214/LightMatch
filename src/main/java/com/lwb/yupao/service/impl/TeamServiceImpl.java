@@ -11,8 +11,8 @@ import com.lwb.yupao.model.Team;
 import com.lwb.yupao.model.User;
 import com.lwb.yupao.model.UserTeam;
 import com.lwb.yupao.model.req.TeamJoinReq;
+import com.lwb.yupao.model.req.TeamQueryReq;
 import com.lwb.yupao.model.req.TeamQuitReq;
-import com.lwb.yupao.model.req.TeamReq;
 import com.lwb.yupao.model.req.TeamUpdateReq;
 import com.lwb.yupao.model.vo.TeamUserVO;
 import com.lwb.yupao.model.vo.UserVO;
@@ -118,7 +118,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
     }
 
     @Override
-    public List<TeamUserVO> listTeams(TeamReq teamReq,boolean isAdmin) {
+    public List<TeamUserVO> listTeams(TeamQueryReq teamReq, boolean isAdmin) {
         //组合查询条件
         QueryWrapper<Team> queryWrapper = new QueryWrapper<>();
         //已过期的不展示
@@ -127,6 +127,10 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
             Long id = teamReq.getId();
             if(id != null && id > 0){
                 queryWrapper.eq("id",id);
+            }
+            List<Long> ids = teamReq.getIds();
+            if (CollectionUtils.isNotEmpty(ids)){
+                queryWrapper.in("id",ids);
             }
             String searchText = teamReq.getSearchText();
             if (StringUtils.isNotBlank(searchText)){

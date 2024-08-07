@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lwb.yupao.common.BaseResult;
 import com.lwb.yupao.model.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.lwb.yupao.model.req.UserUpdateReq;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
@@ -49,11 +50,11 @@ public interface UserService extends IService<User> {
     List<User> searchUserByTags(List<String> tagList);
     /**
      * 更新用户信息
-     * @param user 用户信息
+     * @param userUpdateReq 用户信息
      * @param request HttpServletRequest
      * @return int
      */
-    int updateUser(User user,HttpServletRequest request);
+    int updateUser(UserUpdateReq userUpdateReq, HttpServletRequest request);
 
     /**
      * 获取当前用户
