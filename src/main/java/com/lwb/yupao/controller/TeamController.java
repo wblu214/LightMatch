@@ -20,9 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
 @RestController
 @RequestMapping("team")
 @Slf4j
@@ -84,7 +83,7 @@ public class TeamController {
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
         boolean isAdmin = userService.isAdmin(request);
-        List<TeamUserVO> teamList = teamService.listTeams(teamQueryReq,isAdmin);
+        List<TeamUserVO> teamList = teamService.listTeams(teamQueryReq,isAdmin,request);
         return ResultUtil.success(teamList);
     }
     @GetMapping("/list/page")
@@ -127,7 +126,7 @@ public class TeamController {
         }
         User loginUser = userService.getCurrentUser(request);
         teamQueryReq.setUserId(loginUser.getId());
-        List<TeamUserVO> teamList = teamService.listTeams(teamQueryReq,true);
+        List<TeamUserVO> teamList = teamService.listTeams(teamQueryReq,true,request);
         return ResultUtil.success(teamList);
     }
     /**
@@ -142,13 +141,13 @@ public class TeamController {
         QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userId",loginUser.getId());
         List<UserTeam> userTeamList = userTeamService.list(queryWrapper);
+        if (userTeamList == null || userTeamList.isEmpty()){
+            return ResultUtil.success(new ArrayList<>());
+        }
         //取出不重复的队伍id
         List<Long> teamIdList = userTeamList.stream().map(UserTeam::getTeamId).distinct().toList();
         teamQueryReq.setIds(teamIdList);
-        List<TeamUserVO> teamList = teamService.listTeams(teamQueryReq,true);
-        for (TeamUserVO team : teamList) {
-            team.setHasJoin(true);
-        }
+        List<TeamUserVO> teamList = teamService.listTeams(teamQueryReq,true,request);
         return ResultUtil.success(teamList);
     }
 }

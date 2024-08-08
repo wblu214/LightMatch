@@ -25,7 +25,7 @@ public interface TeamService extends IService<Team> {
     /**
      * 查询队伍
      */
-    List<TeamUserVO> listTeams(TeamQueryReq teamReq, boolean isAdmin);
+    List<TeamUserVO> listTeams(TeamQueryReq teamReq, boolean isAdmin,HttpServletRequest request);
     /**
      * 更新队伍
      */
