@@ -5,7 +5,8 @@ import lombok.Getter;
 @Getter
 public enum GenderEnum {
     FEMALE(0,"女"),
-    MALE(1,"男");
+    MALE(1,"男"),
+    UNKNOWN(-1,"未知");
 
 
     private final Integer code;
