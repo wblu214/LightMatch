@@ -1,5 +1,7 @@
 package com.lwb.yupao.enums;
 
+import com.lwb.yupao.common.BusinessesException;
+import com.lwb.yupao.common.ErrorCode;
 import lombok.Getter;
 
 @Getter
@@ -24,7 +26,7 @@ public enum GenderEnum {
         }else if (desc.equals(MALE.desc)){
             return MALE.code;
         }
-        return null;
+       throw new BusinessesException(ErrorCode.PARAMS_ERROR,"输入性别错误");
     }
     public static String getDesc(Integer code) {
         if (code.equals(FEMALE.code)){
