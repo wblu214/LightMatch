@@ -1,11 +1,6 @@
-FROM maven:3.5-jdk-17-alpine as builder
-
-WORKDIR /app
-
-COPY pom.xml .
-COPY src ./src
-
-RUN mvn package -DskipTests
-
-CMD ["java", "-jar", "app/target/yupao_back-0.0.1-SNAPSHOT.jar","--server.port=2024","--spring.profiles.active=prod"]
+FROM openjdk:17
+COPY *.jar /app.jar
+CMD ["--server.port=2024"]
+EXPOSE 2024
+ENTRYPOINT ["java","-jar","/app.jar"]
 LABEL authors="路文斌"

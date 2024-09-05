@@ -25,6 +25,8 @@ public enum GenderEnum {
             return FEMALE.code;
         }else if (desc.equals(MALE.desc)){
             return MALE.code;
+        }else if (desc.equals(UNKNOWN.desc)){
+            return UNKNOWN.code;
         }
        throw new BusinessesException(ErrorCode.PARAMS_ERROR,"输入性别错误");
     }
