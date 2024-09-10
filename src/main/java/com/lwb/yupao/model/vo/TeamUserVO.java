@@ -47,6 +47,11 @@ public class TeamUserVO implements Serializable {
     private Long userId;
 
     /**
+     * 队伍id
+     */
+    private Long teamId;
+
+    /**
      * 0 - 公开，1 - 私有，2 - 加密
      */
     private Integer status;
@@ -69,10 +74,14 @@ public class TeamUserVO implements Serializable {
     /**
      * 已加入的用户数
      */
-    private Integer hasJoinNum;
+    private Integer currentNum;
 
     /**
      * 是否已加入队伍
      */
     private boolean hasJoin = false;
+    /**
+     * 队伍头像
+     */
+    private String imageUrl;
 }

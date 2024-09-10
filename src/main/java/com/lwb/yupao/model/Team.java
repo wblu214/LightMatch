@@ -59,6 +59,14 @@ public class Team implements Serializable {
     private String password;
 
     /**
+     * 队伍头像
+     */
+    private String imageUrl;
+    /**
+     * 已加入人数
+     */
+    private Integer currentNum;
+    /**
      * 创建时间
      */
     private Date createTime;

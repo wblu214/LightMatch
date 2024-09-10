@@ -39,4 +39,9 @@ public class TeamCreateReq implements Serializable {
      * 密码
      */
     private String password;
+
+    /**
+     * 队伍头像
+     */
+    private String imageUrl;
 }

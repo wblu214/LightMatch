@@ -62,10 +62,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
         if(account.length() < 4 || account.length() > 20){
-            throw new BusinessesException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessesException(ErrorCode.PARAMS_ERROR,"账号长度在4-20之间");
         }
         if (password.length() < 6 || password.length() > 20){
-            throw new BusinessesException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessesException(ErrorCode.PARAMS_ERROR,"密码长度在6-20之间");
         }
         //校验特殊字符
         String pattern = "[`~!@#$%^&*()+=|{}:;\\\\.<>/?！￥…（）—【】‘；：”“’。，、？' ]";
@@ -226,7 +226,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             if (userUpdateReq.getGender() != null){
                 user.setGender(GenderEnum.getCode(userUpdateReq.getGender()));
             }
-            BeanUtils.copyProperties(userUpdateReq,user);;
+            BeanUtils.copyProperties(userUpdateReq,user);
+            user.setCode(String.valueOf(user.getId()));
             result =  userMapper.updateById(user);
             //更新缓存
             User updateUser = userMapper.selectById(userUpdateReq.getId());
@@ -241,10 +242,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return null;
         }
          User currentUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+        log.info("从session读到的currentUser: {}",currentUser);
         try {
             if (currentUser == null) {
                 if (redisTemplate.opsForValue().get(USER_LOGIN_STATE) != null) {
                     currentUser = (User) redisTemplate.opsForValue().get(USER_LOGIN_STATE);
+                    log.info("从redis读到的currentUser: {}",currentUser);
                     return currentUser;
                 }
                 throw new BusinessesException(ErrorCode.USER_NOT_LOGIN);
