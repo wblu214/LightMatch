@@ -242,10 +242,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return null;
         }
          User currentUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+        log.info("从session读到的currentUser: {}",currentUser);
         try {
             if (currentUser == null) {
                 if (redisTemplate.opsForValue().get(USER_LOGIN_STATE) != null) {
                     currentUser = (User) redisTemplate.opsForValue().get(USER_LOGIN_STATE);
+                    log.info("从redis读到的currentUser: {}",currentUser);
                     return currentUser;
                 }
                 throw new BusinessesException(ErrorCode.USER_NOT_LOGIN);

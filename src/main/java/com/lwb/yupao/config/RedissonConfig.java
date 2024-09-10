@@ -17,8 +17,6 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 public class RedissonConfig {
     private  final String redisHost = "47.108.95.155";
-//    private  final String redisHost = "127.0.0.1";
-
     private int redisPort = 6379;
     private String redisPass = "123456";
     @Bean
@@ -28,9 +26,7 @@ public class RedissonConfig {
                 .setAddress("redis://" + redisHost + ":" + redisPort)
                 .setPassword(redisPass)
                 .setDatabase(1);
-        log.info(config.useSingleServer().getAddress()+"=================");
-        RedissonClient redisson = Redisson.create(config);
-        log.info(config.useSingleServer().getAddress()+"=================");
-        return redisson;
+        //        log.info(config.useSingleServer().getAddress()+"=================");
+        return Redisson.create(config);
     }
 }
