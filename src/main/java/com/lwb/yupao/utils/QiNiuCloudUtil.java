@@ -74,7 +74,7 @@ public class QiNiuCloudUtil {
             String upToken = auth.uploadToken(QiNiuCloud_bucket);
 
             try {
-                uploadManager.put(byteInputStream,key,upToken,null, null);
+                uploadManager.put(byteInputStream,userImageName,upToken,null, null);
             } catch (QiniuException ex) {
                 Response r = ex.response;
                 System.err.println("七牛云ERROR:" + r.toString());
