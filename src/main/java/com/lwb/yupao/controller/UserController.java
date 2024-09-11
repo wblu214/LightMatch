@@ -40,6 +40,8 @@ public class UserController {
     private UserService userService;
     @Resource
     private RedisTemplate<String,Object> redisTemplate;
+    @Resource
+    private QiNiuCloudUtil qiNiuCloudUtil;
     /**
      * 用户注册
      * @param userRequest 用户注册请求体
@@ -168,5 +170,17 @@ public class UserController {
         int result = userService.updateUser(userUpdateReq, request);
         return ResultUtil.success(result);
     }
-
+    @PostMapping("/uploadImage")
+    BaseResult<String> updateUser(@RequestParam("file")MultipartFile file,HttpServletRequest request) {
+        if(file == null){
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
+        }
+        String imageUrl;
+        try{
+        imageUrl = qiNiuCloudUtil.qiNiuCloudUploadImage(file,request);
+        }catch{
+            throw new BusinessesException(ErrorCode.SYSTEM_ERROR,"上传失败");
+        }
+        return ResultUtil.success(imageUrl);
+    }
 }

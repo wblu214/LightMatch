@@ -31,7 +31,7 @@ public class QiNiuCloudUtil {
      * @param file 图片
      * @return 返回图片存储后的新图片名
      */
-    public  String QiNiuCloudUploadImage(MultipartFile file) throws Exception{
+    public  String qiNiuCloudUploadImage(MultipartFile file,HttpServletRequest request) throws Exception{
         if(file.isEmpty()) {
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }else if(file.getSize() > 1024*1024*10){
@@ -62,9 +62,8 @@ public class QiNiuCloudUtil {
         UploadManager uploadManager = new UploadManager(cfg);
         //生成上传凭证，然后准备上传
         byte[] bytes = file.getBytes();
-        String imageName = DigestUtils.md5DigestAsHex(bytes);//将图片md5的值作为图片名，避免重复图片浪费空间
-//        userService.getCurrentUser();
-//        String imageName = user.getUserName()+user.getCode();
+        User user = userService.getCurrentUser(request);
+        String imageName = user.getUserName()+user.getCode()+"";
         String userImageName = imageName + customSuffix;//图片保存到七牛云后的文件名
 
         try {
@@ -83,7 +82,7 @@ public class QiNiuCloudUtil {
         } catch (UnsupportedEncodingException ex) {
             throw new BusinessesException(ErrorCode.SYSTEM_ERROR,"上传失败");
         }
-        return userImageName;
+        return String.format("%s/%s", QiNiuCloud_domainName, userImageName);
     }
     /**
      * 获取七牛云图片链接
