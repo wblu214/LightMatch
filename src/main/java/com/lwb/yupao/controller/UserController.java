@@ -12,6 +12,7 @@ import com.lwb.yupao.model.req.UserLoginReq;
 import com.lwb.yupao.model.req.UserRegisterReq;
 import com.lwb.yupao.model.req.UserUpdateReq;
 import com.lwb.yupao.service.UserService;
+import com.lwb.yupao.utils.QiNiuCloudUtil;
 import com.lwb.yupao.utils.ResultUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -177,23 +179,31 @@ public class UserController {
 
     /**
      * 上传图片
-     * @param MultipartFile
+     * @param file
      * @return String
      */
     
     @PostMapping("/uploadImage")
-    BaseResult<String> updateUser(@RequestParam("file")MultipartFile file,HttpServletRequest request) {
+    BaseResult<String> uploadImage(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
         if(file == null){
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
         String imageUrl;
 
         try{
-        imageUrl = qiNiuCloudUtil.qiNiuCloudUploadImage(file,request);
-        }catch{
-            throw new BusinessesException(ErrorCode.SYSTEM_ERROR,"上传失败");
+        imageUrl = qiNiuCloudUtil.uploadQiNiuCloudImage(file,request);
+        }catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        
+        return ResultUtil.success(imageUrl);
+    }
+
+    @GetMapping("/getImageUrl")
+    BaseResult<String> getImageUrl(String fileName){
+        if (StringUtils.isBlank(fileName)){
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
+        }
+        String imageUrl = qiNiuCloudUtil.getQiNiuCloudImageUrl(fileName);
         return ResultUtil.success(imageUrl);
     }
 }
