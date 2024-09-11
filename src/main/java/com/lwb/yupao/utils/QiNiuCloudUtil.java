@@ -65,7 +65,7 @@ public class QiNiuCloudUtil {
         String imageName = DigestUtils.md5DigestAsHex(bytes);//将图片md5的值作为图片名，避免重复图片浪费空间
 //        userService.getCurrentUser();
 //        String imageName = user.getUserName()+user.getCode();
-        String key = imageName + customSuffix;//图片保存到七牛云后的文件名
+        String userImageName = imageName + customSuffix;//图片保存到七牛云后的文件名
 
         try {
             byte[] uploadBytes = file.getBytes();
@@ -83,7 +83,7 @@ public class QiNiuCloudUtil {
         } catch (UnsupportedEncodingException ex) {
             throw new BusinessesException(ErrorCode.SYSTEM_ERROR,"上传失败");
         }
-        return key;
+        return userImageName;
     }
     /**
      * 获取七牛云图片链接
