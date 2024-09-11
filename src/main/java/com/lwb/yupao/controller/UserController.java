@@ -42,11 +42,13 @@ public class UserController {
     private RedisTemplate<String,Object> redisTemplate;
     @Resource
     private QiNiuCloudUtil qiNiuCloudUtil;
+
     /**
      * 用户注册
      * @param userRequest 用户注册请求体
      * @return Long
      */
+
     @PostMapping("/register")
     BaseResult<Long> saveUser(@RequestBody UserRegisterReq userRequest) {
         if (userRequest == null) {
@@ -69,6 +71,7 @@ public class UserController {
      * @param request     HttpServletRequest
      * @return User
      */
+
     @PostMapping("/login")
     BaseResult<User> loginUser(@RequestBody UserLoginReq userRequest, HttpServletRequest request) {
         if (userRequest == null) {
@@ -96,6 +99,7 @@ public class UserController {
         int result = userService.userLogout(request);
         return ResultUtil.success(result);
     }
+    
     @GetMapping("/search")
     BaseResult<List<User>> getUserList(String username, HttpServletRequest request) {
         if (userService.isAdmin(request)) {
@@ -170,17 +174,26 @@ public class UserController {
         int result = userService.updateUser(userUpdateReq, request);
         return ResultUtil.success(result);
     }
+
+    /**
+     * 上传图片
+     * @param MultipartFile
+     * @return String
+     */
+    
     @PostMapping("/uploadImage")
     BaseResult<String> updateUser(@RequestParam("file")MultipartFile file,HttpServletRequest request) {
         if(file == null){
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
         String imageUrl;
+
         try{
         imageUrl = qiNiuCloudUtil.qiNiuCloudUploadImage(file,request);
         }catch{
             throw new BusinessesException(ErrorCode.SYSTEM_ERROR,"上传失败");
         }
+        
         return ResultUtil.success(imageUrl);
     }
 }

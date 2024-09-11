@@ -31,6 +31,7 @@ public class QiNiuCloudUtil {
      * @param file 图片
      * @return 返回图片存储后的新图片名
      */
+    
     public  String qiNiuCloudUploadImage(MultipartFile file,HttpServletRequest request) throws Exception{
         if(file.isEmpty()) {
             throw new BusinessesException(ErrorCode.NULL_ERROR);
