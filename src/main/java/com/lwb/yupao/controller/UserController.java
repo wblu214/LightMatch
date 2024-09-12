@@ -179,23 +179,22 @@ public class UserController {
 
     /**
      * 上传图片
-     * @param file
+     * @param file 文件
      * @return String
      */
     
     @PostMapping("/uploadImage")
-    BaseResult<String> uploadImage(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
+    BaseResult<String> uploadImage(MultipartFile file, HttpServletRequest request) {
         if(file == null){
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
-        String imageUrl;
-
+        String fileName;
         try{
-        imageUrl = qiNiuCloudUtil.uploadQiNiuCloudImage(file,request);
+            fileName = qiNiuCloudUtil.uploadQiNiuCloudImage(file,request);
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return ResultUtil.success(imageUrl);
+        return ResultUtil.success(qiNiuCloudUtil.getQiNiuCloudImageUrl(fileName));
     }
 
     @GetMapping("/getImageUrl")

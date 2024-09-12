@@ -84,7 +84,7 @@ public class QiNiuCloudUtil {
         } catch (UnsupportedEncodingException ex) {
             throw new BusinessesException(ErrorCode.SYSTEM_ERROR,"上传失败");
         }
-        return String.format("%s/%s", QiNiuCloud_domainName, userImageName);
+        return userImageName;
     }
     /**
      * 获取七牛云图片临时链接
