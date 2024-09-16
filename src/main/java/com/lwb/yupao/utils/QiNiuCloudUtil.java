@@ -72,7 +72,7 @@ public class QiNiuCloudUtil {
             byte[] uploadBytes = file.getBytes();
             ByteArrayInputStream byteInputStream=new ByteArrayInputStream(uploadBytes);
             Auth auth = Auth.create(QiNiuCloud_accessKey, QiNiuCloud_secretKey);
-            String upToken = auth.uploadToken(QiNiuCloud_bucket);
+            String upToken = auth.uploadToken(QiNiuCloud_bucket, userImageName);
 
             try {
                 uploadManager.put(byteInputStream,userImageName,upToken,null, null);

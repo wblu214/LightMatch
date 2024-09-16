@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lwb.yupao.common.BaseResult;
 import com.lwb.yupao.common.BusinessesException;
 import com.lwb.yupao.common.ErrorCode;
-import com.lwb.yupao.enums.GenderEnum;
 import com.lwb.yupao.model.User;
 import com.lwb.yupao.model.req.UserLoginReq;
 import com.lwb.yupao.model.req.UserRegisterReq;
@@ -184,13 +183,13 @@ public class UserController {
      */
     
     @PostMapping("/uploadImage")
-    BaseResult<String> uploadImage(MultipartFile file, HttpServletRequest request) {
+    BaseResult<String> uploadImage(MultipartFile file,HttpServletRequest httpRequest) {
         if(file == null){
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
         String fileName;
         try{
-            fileName = qiNiuCloudUtil.uploadQiNiuCloudImage(file,request);
+            fileName = qiNiuCloudUtil.uploadQiNiuCloudImage(file,httpRequest);
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
