@@ -166,6 +166,21 @@ public class UserController {
         }
         return userService.recommendUser(request);
     }
+    /**
+     * 获取最匹配的用户
+     * @param num 匹配的用户个数
+     * @param request request
+     * @return 匹配的用户列表
+     */
+    @GetMapping("/match")
+    public BaseResult<List<User>> matchUsers(long num, HttpServletRequest request) {
+        if (num <= 0 || num > 20) {
+            throw new BusinessesException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userService.getCurrentUser(request);
+        return userService.matchUsers(num, user);
+    }
+
     @PostMapping("/update")
     BaseResult<Integer> updateUser(@RequestBody UserUpdateReq userUpdateReq, HttpServletRequest request) {
         //校验参数是否为空

@@ -67,6 +67,9 @@ public interface UserService extends IService<User> {
      *
      */
     BaseResult<IPage<User>> recommendUser(HttpServletRequest request);
+
+    BaseResult<List<User>> matchUsers(long num, User loginUser);
+
     /**
      * 用户脱敏
      * @param originUser 原始用户信息
