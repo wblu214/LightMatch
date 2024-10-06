@@ -6,12 +6,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.lwb.yupao.common.BaseResult;
 import com.lwb.yupao.common.BusinessesException;
 import com.lwb.yupao.common.ErrorCode;
-import com.lwb.yupao.enums.GenderEnum;
 import com.lwb.yupao.model.User;
 import com.lwb.yupao.model.req.UserLoginReq;
 import com.lwb.yupao.model.req.UserRegisterReq;
 import com.lwb.yupao.model.req.UserUpdateReq;
 import com.lwb.yupao.service.UserService;
+import com.lwb.yupao.utils.QiNiuCloudUtil;
 import com.lwb.yupao.utils.ResultUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -165,6 +166,21 @@ public class UserController {
         }
         return userService.recommendUser(request);
     }
+    /**
+     * 获取最匹配的用户
+     * @param num 匹配的用户个数
+     * @param request request
+     * @return 匹配的用户列表
+     */
+    @GetMapping("/match")
+    public BaseResult<List<User>> matchUsers(long num, HttpServletRequest request) {
+        if (num <= 0 || num > 20) {
+            throw new BusinessesException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userService.getCurrentUser(request);
+        return userService.matchUsers(num, user);
+    }
+
     @PostMapping("/update")
     BaseResult<Integer> updateUser(@RequestBody UserUpdateReq userUpdateReq, HttpServletRequest request) {
         //校验参数是否为空
@@ -177,23 +193,30 @@ public class UserController {
 
     /**
      * 上传图片
-     * @param MultipartFile
+     * @param file 文件
      * @return String
      */
     
     @PostMapping("/uploadImage")
-    BaseResult<String> updateUser(@RequestParam("file")MultipartFile file,HttpServletRequest request) {
+    BaseResult<String> uploadImage(MultipartFile file,HttpServletRequest httpRequest) {
         if(file == null){
             throw new BusinessesException(ErrorCode.NULL_ERROR);
         }
-        String imageUrl;
-
+        String fileName;
         try{
-        imageUrl = qiNiuCloudUtil.qiNiuCloudUploadImage(file,request);
-        }catch{
-            throw new BusinessesException(ErrorCode.SYSTEM_ERROR,"上传失败");
+            fileName = qiNiuCloudUtil.uploadQiNiuCloudImage(file,httpRequest);
+        }catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        
+        return ResultUtil.success(qiNiuCloudUtil.getQiNiuCloudImageUrl(fileName));
+    }
+
+    @GetMapping("/getImageUrl")
+    BaseResult<String> getImageUrl(String fileName){
+        if (StringUtils.isBlank(fileName)){
+            throw new BusinessesException(ErrorCode.NULL_ERROR);
+        }
+        String imageUrl = qiNiuCloudUtil.getQiNiuCloudImageUrl(fileName);
         return ResultUtil.success(imageUrl);
     }
 }

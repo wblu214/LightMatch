@@ -332,13 +332,13 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
                     throw new BusinessesException(ErrorCode.SYSTEM_ERROR,"转让队长失败");
                 }
             }
-        }
-        //队伍人数减1
-        Team updateTeam = this.getById(teamId);
-        updateTeam.setCurrentNum(updateTeam.getCurrentNum()-1);
-        boolean updateResult = this.updateById(updateTeam);
-        if (!updateResult){
-            throw new BusinessesException(ErrorCode.SYSTEM_ERROR,"退出队伍失败");
+            //队伍人数减1
+            Team updateTeam = this.getById(teamId);
+            updateTeam.setCurrentNum(updateTeam.getCurrentNum()-1);
+            boolean updateResult = this.updateById(updateTeam);
+            if (!updateResult){
+                throw new BusinessesException(ErrorCode.SYSTEM_ERROR,"退出队伍失败");
+            }
         }
         //移除用户队伍关系
         QueryWrapper<UserTeam> deleteWrapper = new QueryWrapper<>();

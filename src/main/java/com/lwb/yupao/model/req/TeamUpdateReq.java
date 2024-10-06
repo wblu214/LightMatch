@@ -24,6 +24,10 @@ public class TeamUpdateReq implements Serializable {
      */
     private String description;
     /**
+     * 队伍头像
+     */
+    private String imageUrl;
+    /**
      * 过期时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd")
