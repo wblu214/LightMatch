@@ -65,7 +65,9 @@ public class QiNiuCloudUtil {
         UploadManager uploadManager = new UploadManager(cfg);
         //生成上传凭证，然后准备上传
         User user = userService.getCurrentUser(request);
-        String imageName = String.format("%s_%s",user.getUserAccount(),user.getCode());
+        //生成一个范围在0-1000的随机数
+        int code = (int) (Math.random() * 1000);
+        String imageName = String.format("%s_%s_%s",user.getUserAccount(),user.getCode(),code);
         String userImageName = imageName + customSuffix;//图片保存到七牛云后的文件名
 
         try {
