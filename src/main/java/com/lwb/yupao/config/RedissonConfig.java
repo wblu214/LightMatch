@@ -16,15 +16,15 @@ import org.springframework.context.annotation.Configuration;
 @Data
 @Slf4j
 public class RedissonConfig {
-    private  final String redisHost = "47.108.95.155";
+    private  final String redisHost = "127.0.0.1"; // Redis服务器地址
     private int redisPort = 6379;
-    private String redisPass = "123456";
+//    private String redisPass = "123456";
     @Bean
     public RedissonClient redissonClient() {
         Config config = new Config();
         config.useSingleServer() // 使用单机模式
                 .setAddress("redis://" + redisHost + ":" + redisPort)
-                .setPassword(redisPass)
+//                .setPassword(redisPass)
                 .setDatabase(1);
         //        log.info(config.useSingleServer().getAddress()+"=================");
         return Redisson.create(config);

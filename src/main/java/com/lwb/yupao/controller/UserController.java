@@ -33,6 +33,7 @@ import static com.lwb.yupao.enums.UserPrefix.USER_LOGIN_STATE;
  * @author luweibin
  */
 @RestController
+@CrossOrigin(originPatterns = "*", allowCredentials = "true")  // 使用 originPatterns
 @RequestMapping("user")
 @Slf4j
 public class UserController {

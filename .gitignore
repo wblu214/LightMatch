@@ -28,10 +28,3 @@ target/
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
-
-### VS Code ###
-.vscode/
-sql/create.sql
-/src/main/resources/application-prod.yml
-/src/main/resources/application.yml
-/src/main/java/com/lwb/yupao/config
