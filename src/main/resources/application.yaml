@@ -11,7 +11,6 @@ spring:
   # session 失效时间（分钟）
   session:
     timeout: 86400
-    store-type: redis
 server:
   port: 2024
   servlet:
